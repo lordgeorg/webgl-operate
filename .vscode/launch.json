@@ -28,7 +28,12 @@
                 "webpack:///./~/*": "${webRoot}/../node_modules/*",
                 "webpack:///./*": "${webRoot}/../source/*"
             },
+            "runtimeArgs": [
+                "--new-window",
+                "--incognito"
+            ],
             "windows": {
+                "runtimeExecutable": "B:\\Internet\\Iron\\chrome.exe",
                 "url": "${workspaceRoot}\\dist\\index.html",
                 "webRoot": "${workspaceRoot}\\dist",
                 "sourceMapPathOverrides": {
