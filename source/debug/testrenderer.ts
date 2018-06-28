@@ -16,6 +16,9 @@ import { Shader } from '../shader';
 import { Texture2 } from '../texture2';
 import { TestNavigation } from './testnavigation';
 
+import { LookUpTexture } from '../lut/lookuptexture';
+import { LUTRenderer } from '../lut/LUTRenderer';
+
 
 namespace debug {
 
@@ -38,6 +41,8 @@ namespace debug {
         protected _intermediateFBO: Framebuffer;
 
         protected _testNavigation: TestNavigation;
+
+        protected _lutRenderer: LUTRenderer;
 
 
         protected onInitialize(context: Context, callback: Invalidate,
@@ -105,6 +110,11 @@ namespace debug {
             /* Create and configure test navigation. */
 
             this._testNavigation = new TestNavigation(() => this.invalidate(), mouseEventProvider);
+
+            this._lutRenderer = new LUTRenderer(this._context);
+            this._lutRenderer.initialize(this._ndcTriangle);
+            this._lutRenderer.target = this._defaultFBO;
+            this._lutRenderer.lut = LookUpTexture.create(16);
 
             return true;
         }
@@ -195,6 +205,8 @@ namespace debug {
             this._blit.framebuffer = this._accumulate.framebuffer ?
                 this._accumulate.framebuffer : this._blit.framebuffer = this._intermediateFBO;
             this._blit.frame();
+
+            this._lutRenderer.renderLUTShader();
         }
 
 
