@@ -114,7 +114,7 @@ namespace debug {
             this._lutRenderer = new LUTRenderer(this._context);
             this._lutRenderer.initialize(this._ndcTriangle);
             this._lutRenderer.target = this._defaultFBO;
-            this._lutRenderer.lut = LookUpTexture.create(16);
+            this._lutRenderer.lut = LookUpTexture.create(24);
 
             return true;
         }

@@ -85,11 +85,6 @@ export class LUTRenderer extends Initializable {
         this._program = new Program(this._context, 'LUTProgram');
         this._program.initialize([vert, frag]);
 
-        // this._program.bind();
-        // uniforms ...
-        // this._program.unbind();
-
-
         if (ndcTriangle === undefined) {
             this._ndcTriangle = new NdcFillingTriangle(this._context);
         } else {
@@ -130,7 +125,18 @@ export class LUTRenderer extends Initializable {
 
     set lut(lut: LookUpTexture) {
         this._lut = lut;
-        // gl.uniform1i(this._program.uniform('u_texture'), 0);
+
+        const gl = this._context.gl;
+
+        // [ab][XY] for linear correction, e.g. x' = aX * x + bX
+        /* const aY = this.drawHeight / (this.drawHeight - 1);
+        const bY = -1 / (2 * this.drawHeight - 2);
+        const aX = this.drawWidth / (this.drawWidth - 1);
+        const bX = -1 / (2 * this.drawWidth - 2); */
+
+        this._program.bind();
+        gl.uniform1f(this._program.uniform('u_size'), this._lut.size);
+        this._program.unbind();
     }
 
     get drawHeight(): GLuint {
