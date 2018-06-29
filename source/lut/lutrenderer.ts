@@ -128,14 +128,15 @@ export class LUTRenderer extends Initializable {
 
         const gl = this._context.gl;
 
-        // [ab][XY] for linear correction, e.g. x' = aX * x + bX
-        /* const aY = this.drawHeight / (this.drawHeight - 1);
-        const bY = -1 / (2 * this.drawHeight - 2);
-        const aX = this.drawWidth / (this.drawWidth - 1);
-        const bX = -1 / (2 * this.drawWidth - 2); */
+
+        // [ab][XY] for linear correction: [x',y'] = a * [x,y] + b
+        const size = this._lut.size;
+        const stride = 1 / (this._lut.size - 1);
+        const a = this._lut.size * stride;
+        const b = -stride / 2;
 
         this._program.bind();
-        gl.uniform1f(this._program.uniform('u_size'), this._lut.size);
+        gl.uniform4f(this._program.uniform('u_param'), a, b, size, stride);
         this._program.unbind();
     }
 

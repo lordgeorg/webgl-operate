@@ -209,7 +209,6 @@ namespace debug {
             this._lutRenderer.renderLUTShader();
         }
 
-
     }
 
 }

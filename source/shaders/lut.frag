@@ -12,7 +12,7 @@ precision lowp float;
 
 varying vec2 v_uv;
 
-uniform float u_size;
+uniform vec4 u_param; // [a, b, size, stride]; a and b for linear equation [x',y'] = a * [x,y] + b
 
 
 void main(void)
@@ -20,11 +20,11 @@ void main(void)
     /* The v_uv [0..1]^2 represents the quad of the viewport. This results in the border pixel having an offset of u_res[0]/2
      * from 0 or 1. But information about the corners of the color space are required, therefore, this offset needs to be
      * compensated. */
-    vec3 rgb;
-    rgb.g = u_size / (u_size - 1.) * v_uv.y - .5 / (u_size - 1.);
-    rgb.b = v_uv.x * u_size;
-    rgb.r = mod(rgb.b, 1.);
-    rgb.r = u_size / (u_size - 1.) * rgb.r - .5 / (u_size - 1.);
-    rgb.b = floor(rgb.b) / (u_size - 1.);
-    fragColor = vec4(rgb, 1);
+
+    vec2 xy = v_uv * vec2(u_param.z, 1.);
+    // this would be great with modf() ...
+    float bLayer = floor(xy.x);
+    xy.x = mod(xy.x, 1.);
+    xy = u_param.x * xy + u_param.y;
+    fragColor = vec4(xy, bLayer * u_param.w, 1);
 }
