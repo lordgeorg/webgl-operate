@@ -16,6 +16,8 @@ import { Renderer } from './renderer';
 import { Resizable } from './resizable';
 import { Wizard } from './wizard';
 
+import { ColorMappingFunction } from './lut/lookuptexture';
+
 
 /**
  * A canvas is associated to a single canvas element (DOM) and integrates or delegates event handling as well as
@@ -638,9 +640,9 @@ export class Canvas extends Resizable {
     }
 
 
-    showLUT(visible: boolean = true): void {
+    showLUT(): void {
         if (this._renderer !== undefined) {
-            this._renderer.showLUT(visible);
+            this._renderer.showLUT(true);
         }
     }
 
@@ -648,5 +650,23 @@ export class Canvas extends Resizable {
         if (this._renderer !== undefined) {
             this._renderer.showLUT(false);
         }
+    }
+
+    resizeLUT(size: GLubyte) {
+        if (this._renderer !== undefined) {
+            this._renderer.resizeLUT(size);
+        }
+    }
+
+    resetLUT(): void {
+
+    }
+
+    activeLUT(func: ColorMappingFunction): void {
+
+    }
+
+    applyGrading(func: ColorMappingFunction): void {
+
     }
 }

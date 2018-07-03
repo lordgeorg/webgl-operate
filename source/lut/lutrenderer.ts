@@ -36,9 +36,11 @@ export class LUTRenderer extends Initializable {
     protected _programProcedural: Program;
     protected _programTexture: Program;
 
-    protected _lut: LookUpTexture;
+    protected _lut: LookUpTexture | undefined;
 
-    protected _texture: Texture2;
+    protected _texture: Texture2 | undefined;
+
+    protected _defaultSize: GLubyte = 24;
 
 
     constructor(context: Context) {
@@ -48,6 +50,10 @@ export class LUTRenderer extends Initializable {
 
     protected renderTexture(): void {
         if (this._texture === undefined) {
+            if (this._lut === undefined) {
+                throw Error('LUT is undefined');
+            }
+
             this._texture = this._lut.createTexture(this._context);
         }
         this._texture.bind(this._context.gl.TEXTURE0);
@@ -64,38 +70,52 @@ export class LUTRenderer extends Initializable {
         this._ndcTriangle.draw();
     }
 
+    protected setProceduralUniforms(): void {
+        // [ab][XY] for linear correction: [x',y'] = a * [x,y] + b
+        const size = this.drawHeight;
+        const stride = 1 / (size - 1);
+        const a = size * stride;
+        const b = -stride / 2;
+
+        const gl = this._context.gl;
+        this._programProcedural.bind();
+        gl.uniform4f(this._programProcedural.uniform('u_param'), a, b, size, stride);
+        this._programProcedural.unbind();
+    }
+
 
     render(): void {
         assert(this._ndcTriangle && this._ndcTriangle.initialized, `expected an initialized ndc triangle`);
-        assert(this._lut !== undefined, 'to draw a look-up texture you need to define it...');
 
         const gl = this._context.gl;
         if (this._target.width < this.drawWidth || this._target.height < this.drawHeight) {
-            console.log('warning: look-up texture (size: ' + this._lut.size + ', px: ' + this.drawWidth + 'x' +
+            console.log('warning: look-up texture (' + this.drawWidth + 'x' +
                 this.drawHeight + ') does not fit in the target framebuffer');
         }
 
 
         // on lower right side of the screen
         gl.viewport(this._target.width - this.drawWidth, 0, this.drawWidth, this.drawHeight);
+        gl.disable(gl.DEPTH_TEST);
 
         const target = this._context.isWebGL2 ? gl.DRAW_FRAMEBUFFER : gl.FRAMEBUFFER;
         this._target.bind(target);
         this._ndcTriangle.bind();
 
-        if (this._lut.isDefault) {
+        if (this._lut === undefined) {
             this.renderProcedural();
         } else {
             this.renderTexture();
         }
 
-
         this._ndcTriangle.unbind();
         this._target.unbind(target);
+
+        gl.enable(gl.DEPTH_TEST);
+
         /* Every pass is expected to bind its own program when drawing, thus, unbinding is not necessary. */
         // this.program.unbind();
     }
-
 
     @Initializable.initialize()
     initialize(ndcTriangle?: NdcFillingTriangle): boolean {
@@ -127,9 +147,7 @@ export class LUTRenderer extends Initializable {
             this._ndcTriangleShared = true;
         }
 
-
         if (!this._ndcTriangle.initialized) {
-            // TODO does this work?
             const aVertex = this._programProcedural.attribute('a_vertex', 0);
             this._ndcTriangle.initialize(aVertex);
         } else {
@@ -137,10 +155,10 @@ export class LUTRenderer extends Initializable {
             this._programTexture.attribute('a_vertex', this._ndcTriangle.aVertex);
         }
 
+        this.setProceduralUniforms();
 
         return true;
     }
-
 
     /** Specializes this pass's uninitialization. Program and geometry resources are released (if allocated). Cached
      * uniform and attribute locations are invalidated.
@@ -164,39 +182,31 @@ export class LUTRenderer extends Initializable {
         this._target = target;
     }
 
-
-    set lut(lut: LookUpTexture) {
+    set lut(lut: LookUpTexture | undefined) {
         this._lut = lut;
 
-        if (lut === undefined) {
-            return;
-        }
+        this._texture = undefined;
 
-
-        // [ab][XY] for linear correction: [x',y'] = a * [x,y] + b
-        const size = this._lut.size;
-        const stride = 1 / (this._lut.size - 1);
-        const a = this._lut.size * stride;
-        const b = -stride / 2;
-
-        const gl = this._context.gl;
-        this._programProcedural.bind();
-        gl.uniform4f(this._programProcedural.uniform('u_param'), a, b, size, stride);
-        this._programProcedural.unbind();
+        this.setProceduralUniforms();
     }
-
-
-    get lut(): LookUpTexture {
-        return this._lut.copy();
-    }
-
 
     get drawHeight(): GLuint {
+        if (this._lut === undefined) {
+            return this._defaultSize;
+        }
         return this._lut.size;
     }
 
-
     get drawWidth(): GLuint {
+        if (this._lut === undefined) {
+            return this._defaultSize * this._defaultSize;
+        }
         return this._lut.size * this._lut.size;
+    }
+
+    set defaultSize(size: GLubyte) {
+        this._defaultSize = size;
+
+        this.setProceduralUniforms();
     }
 }

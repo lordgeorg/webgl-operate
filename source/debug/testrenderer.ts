@@ -43,6 +43,7 @@ namespace debug {
 
         protected _testNavigation: TestNavigation;
 
+        protected _lut: LookUpTexture | undefined;
         protected _lutRenderer: LUTRenderer;
         protected _lutVisible = false;
 
@@ -116,7 +117,6 @@ namespace debug {
             this._lutRenderer = new LUTRenderer(this._context);
             this._lutRenderer.initialize(this._ndcTriangle);
             this._lutRenderer.target = this._defaultFBO;
-            this._lutRenderer.lut = new LookUpTexture(24, ColorMapping.protanomaly);
 
             return true;
         }
@@ -220,11 +220,21 @@ namespace debug {
         showLUT(visible: boolean): void {
             if (this._lutVisible !== visible) {
                 this._lutVisible = visible;
+
+                this.invalidate(true);
+            }
+        }
+
+        resizeLUT(size: GLubyte): void {
+            assert(size > 1, 'A somewhat meaningful look-up color texture needs at lease a size of 2');
+
+            if (this._lut === undefined || size !== this._lut.size) {
+                this._lutRenderer.lut = this._lut = undefined;
+                this._lutRenderer.defaultSize = size;
                 this.invalidate(true);
             }
         }
     }
-
 }
 
 export = debug;

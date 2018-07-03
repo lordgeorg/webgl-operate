@@ -403,4 +403,5 @@ export abstract class Renderer extends Initializable implements Controllable {
     }
 
     abstract showLUT(visible: boolean): void;
+    abstract resizeLUT(size: GLubyte): void;
 }

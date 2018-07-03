@@ -7,24 +7,35 @@ import { Texture2 } from '../texture2';
 
 export type ColorMappingFunction = (color: Color) => Color;
 
-
+// maybe rename it to 'discreteColorMappingFunction" or stuff
 export class LookUpTexture {
 
     protected _size: GLubyte;
 
     protected _colorBytes: Uint8Array;
 
-    static default(size: GLubyte = 16): LookUpTexture {
-        return new LookUpTexture(size, undefined);
-    }
-
-    constructor(size: GLubyte, func: ColorMappingFunction | undefined) {
+    constructor(size: GLubyte, func: ColorMappingFunction = (a) => a) {
         assert(size > 1, 'A somewhat meaningful look-up color texture needs at lease a size of 2');
         this._size = size;
 
-        if (func !== undefined) {
-            this.createColorArray(func);
-        }
+        this.createColorArray(func);
+    }
+
+    protected colorAt(r: GLbyte, g: GLbyte, b: GLbyte): Color {
+        const index = 3 * ((g * this.size + b) * this.size + r);
+        return new Color().fromUI8(this._colorBytes[index], this._colorBytes[index + 1],
+            this._colorBytes[index + 2]);
+
+    }
+
+    protected findNearest(colorIn: Color, cubeColors: Array<Color>, cubePosition: Array<GLfloat>): void {
+        cubeColors = new Array<Color>(8);
+        cubePosition = new Array<GLfloat>(3);
+
+        const stride = 1. / (this._size - 1);
+        const r = colorIn.r / stride;
+        const g = colorIn.r / stride;
+        const b = colorIn.r / stride;
     }
 
     protected createColorArray(func: ColorMappingFunction) {
@@ -52,10 +63,6 @@ export class LookUpTexture {
         return this._size;
     }
 
-    get isDefault(): boolean {
-        return this._colorBytes === undefined;
-    }
-
     copy(): LookUpTexture {
         const ret = new LookUpTexture(this.size, undefined);
         ret._colorBytes = this._colorBytes.slice(0);
@@ -79,5 +86,10 @@ export class LookUpTexture {
         ret.unbind();
 
         return ret;
+    }
+
+    map(color: Color): Color {
+
+        return color;
     }
 }
