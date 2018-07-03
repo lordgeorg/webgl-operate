@@ -402,4 +402,5 @@ export abstract class Renderer extends Initializable implements Controllable {
         return this._debugTextureSubject.asObservable();
     }
 
+    abstract showLUT(visible: boolean): void;
 }

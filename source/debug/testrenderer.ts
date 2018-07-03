@@ -44,6 +44,7 @@ namespace debug {
         protected _testNavigation: TestNavigation;
 
         protected _lutRenderer: LUTRenderer;
+        protected _lutVisible = false;
 
 
         protected onInitialize(context: Context, callback: Invalidate,
@@ -207,9 +208,21 @@ namespace debug {
                 this._accumulate.framebuffer : this._blit.framebuffer = this._intermediateFBO;
             this._blit.frame();
 
-            this._lutRenderer.render();
+            this.gradingAndLUT();
         }
 
+        protected gradingAndLUT() {
+            if (this._lutVisible) {
+                this._lutRenderer.render();
+            }
+        }
+
+        showLUT(visible: boolean): void {
+            if (this._lutVisible !== visible) {
+                this._lutVisible = visible;
+                this.invalidate(true);
+            }
+        }
     }
 
 }

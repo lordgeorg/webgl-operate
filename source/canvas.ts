@@ -637,4 +637,16 @@ export class Canvas extends Resizable {
         return this._mouseEventProvider;
     }
 
+
+    showLUT(visible: boolean = true): void {
+        if (this._renderer !== undefined) {
+            this._renderer.showLUT(visible);
+        }
+    }
+
+    hideLUT(): void {
+        if (this._renderer !== undefined) {
+            this._renderer.showLUT(false);
+        }
+    }
 }
