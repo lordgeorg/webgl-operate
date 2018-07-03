@@ -16,6 +16,7 @@ import { Shader } from '../shader';
 import { Texture2 } from '../texture2';
 import { TestNavigation } from './testnavigation';
 
+import { ColorMapping } from '../lut/colormapping';
 import { LookUpTexture } from '../lut/lookuptexture';
 import { LUTRenderer } from '../lut/LUTRenderer';
 
@@ -114,7 +115,7 @@ namespace debug {
             this._lutRenderer = new LUTRenderer(this._context);
             this._lutRenderer.initialize(this._ndcTriangle);
             this._lutRenderer.target = this._defaultFBO;
-            this._lutRenderer.lut = LookUpTexture.create(24);
+            this._lutRenderer.lut = new LookUpTexture(24, ColorMapping.protanomaly);
 
             return true;
         }
@@ -206,7 +207,7 @@ namespace debug {
                 this._accumulate.framebuffer : this._blit.framebuffer = this._intermediateFBO;
             this._blit.frame();
 
-            this._lutRenderer.renderLUTShader();
+            this._lutRenderer.render();
         }
 
     }
